@@ -867,3 +867,33 @@ input:invalid {
         font-size: 14px !important;
     }
 }
+
+/* Широкие поля для больших чисел */
+#resell-mode .price-input input {
+    font-size: 20px;
+    padding: 12px 50px 12px 15px;
+    letter-spacing: 0.5px;
+}
+
+/* Чтобы 19 000 000 помещалось */
+#resell-mode .form-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+#resell-mode .price-input {
+    min-width: 200px;
+}
+
+#resell-mode .price-input span {
+    font-size: 18px;
+    right: 15px;
+}
+
+/* Для мобильных */
+@media (max-width: 600px) {
+    #resell-mode .price-input input {
+        font-size: 18px;
+        padding: 10px 40px 10px 12px;
+    }
+}
