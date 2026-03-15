@@ -465,6 +465,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // ===== ОБРАБОТЧИКИ ТРЕКЕРА =====
+
+    // Автообновление статистики при вводе
+    if (buyPriceInput) {
+        buyPriceInput.addEventListener('input', function() {
+            updateStats();
+        });
+    }
+    
+    if (sellPriceInput) {
+        sellPriceInput.addEventListener('input', function() {
+            updateStats();
+        });
+    }
+    
+    if (resellTaxCheckbox) {
+        resellTaxCheckbox.addEventListener('change', function() {
+            updateStats();
+        });
+    }
     
     if (addButton) addButton.addEventListener('click', addDeal);
     if (clearButton) clearButton.addEventListener('click', clearAllDeals);
