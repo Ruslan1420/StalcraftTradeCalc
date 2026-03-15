@@ -1,5 +1,4 @@
-/* styles.css - ПОЛНАЯ ВЕРСИЯ */
-
+/* styles.css */
 :root {
     --primary: #00f3ff;
     --secondary: #ff4d8d;
@@ -41,7 +40,7 @@ input {
 }
 
 .app-container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -866,42 +865,4 @@ input:invalid {
     .result-value {
         font-size: 14px !important;
     }
-}
-
-/* Чтобы 19 000 000 помещалось */
-#resell-mode .form-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-#resell-mode .price-input {
-    min-width: 200px;
-}
-
-#resell-mode .price-input span {
-    font-size: 18px;
-    right: 15px;
-}
-
-/* Для мобильных */
-@media (max-width: 600px) {
-    #resell-mode .price-input input {
-        font-size: 18px;
-        padding: 10px 40px 10px 12px;
-    }
-}
-
-/* Расширяем интерфейс для режима перепродаж */
-#resell-mode .top-section {
-    grid-template-columns: 400px 1fr;  /* Было 300px, стало 400px */
-    gap: 25px;
-}
-
-#resell-mode .price-box {
-    padding: 25px;  /* Чуть больше отступов */
-}
-
-#resell-mode .price-input input {
-    font-size: 18px;  /* Оставляем нормальный шрифт */
-    padding: 12px 45px 12px 15px;
 }
