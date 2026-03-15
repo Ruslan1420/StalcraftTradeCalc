@@ -245,29 +245,34 @@
                         </button>
                     </div>
                     
-                    <!-- Общая статистика (как было) -->
-                    <div class="stats-box">
-                        <h2><i class="fas fa-chart-line"></i> Информация по сделке</h2>
-                        
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-label">Затраты</div>
-                                <div class="stat-value" id="total-spent">0 ₽</div>
+                    <!-- Информация по сделке -->
+                    <div class="results-box">
+                        <h2 style="color: var(--primary); font-family: var(--font-heading); font-size: 18px; margin-bottom: 15px;">
+                            <i class="fas fa-chart-line"></i> Информация по сделке
+                        </h2>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Затраты</div>
+                                <div class="result-value" id="deal-cost">0 ₽</div>
+                                <div class="result-unit">покупка</div>
                             </div>
                             
-                            <div class="stat-item">
-                                <div class="stat-label">Доход</div>
-                                <div class="stat-value" id="total-revenue">0 ₽</div>
+                            <div class="result-item">
+                                <div class="result-label">Доход</div>
+                                <div class="result-value" id="deal-revenue">0 ₽</div>
+                                <div class="result-unit">после налога</div>
                             </div>
                             
-                            <div class="stat-item highlight">
-                                <div class="stat-label">Чистая прибыль</div>
-                                <div class="stat-value" id="total-profit">0 ₽</div>
+                            <div class="result-item highlight">
+                                <div class="result-label">Чистая прибыль</div>
+                                <div class="result-value" id="deal-profit">0 ₽</div>
+                                <div class="result-unit"></div>
                             </div>
                             
-                            <div class="stat-item">
-                                <div class="stat-label">Кол-во сделок</div>
-                                <div class="stat-value" id="deals-count">0</div>
+                            <div class="result-item">
+                                <div class="result-label">Кол-во</div>
+                                <div class="result-value" id="deal-count">1</div>
+                                <div class="result-unit">сделка</div>
                             </div>
                         </div>
                     </div>
