@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputs = [
             slastInput, dustInput, plasmaInput, sugarInput,
             priceSlastInput, priceDustInput, pricePlasmaInput,
-            priceCatalystInput, buyPriceInput, sellPriceInput  // добавили поля трекера
+            priceCatalystInput, buyPriceInput, sellPriceInput
         ];
         
         inputs.forEach(input => {
@@ -86,45 +86,62 @@ document.addEventListener('DOMContentLoaded', function() {
             input.addEventListener('input', function() {
                 // Сохраняем позицию курсора
                 const cursorPos = this.selectionStart;
-                const oldLength = this.value.length;
                 
-                // Убираем все НЕ цифры
+                // Убираем все НЕ цифры и пробелы
                 let rawValue = this.value.replace(/[^\d]/g, '');
                 
-                // Ограничиваем длину
+                // Ограничиваем длину (максимум 8 цифр)
                 if (rawValue.length > 8) {
                     rawValue = rawValue.substring(0, 8);
                 }
                 
-                // Добавляем пробелы (форматируем)
+                // Форматируем с пробелами
                 let formattedValue = '';
                 for (let i = 0; i < rawValue.length; i++) {
+                    // Добавляем пробел после каждых 3 цифр, начиная с конца
                     if (i > 0 && (rawValue.length - i) % 3 === 0) {
                         formattedValue += ' ';
                     }
                     formattedValue += rawValue[i];
                 }
                 
+                // Устанавливаем отформатированное значение
                 this.value = formattedValue;
                 
-                // Восстанавливаем позицию курсора
-                const newLength = this.value.length;
-                const diff = newLength - oldLength;
-                this.setSelectionRange(cursorPos + diff, cursorPos + diff);
+                // Корректируем позицию курсора
+                const newCursorPos = cursorPos + (formattedValue.length - rawValue.length);
+                this.setSelectionRange(newCursorPos, newCursorPos);
                 
                 // Для расчетов используем число без пробелов
                 const numericValue = parseInt(rawValue) || 0;
                 
                 // Запускаем соответствующий расчет
                 if (this.id.includes('price') || this.id.includes('input')) {
+                    // Обновляем значение в соответствующем поле для расчетов
+                    if (this.id === 'price-catalyst') {
+                        priceCatalystInput.value = rawValue;
+                    } else if (this.id === 'price-slast') {
+                        priceSlastInput.value = rawValue;
+                    } else if (this.id === 'price-dust') {
+                        priceDustInput.value = rawValue;
+                    } else if (this.id === 'price-plasma') {
+                        pricePlasmaInput.value = rawValue;
+                    } else if (this.id === 'input-slast') {
+                        slastInput.value = rawValue;
+                    } else if (this.id === 'input-dust') {
+                        dustInput.value = rawValue;
+                    } else if (this.id === 'input-plasma') {
+                        plasmaInput.value = rawValue;
+                    } else if (this.id === 'input-sugar') {
+                        sugarInput.value = rawValue;
+                    } else if (this.id === 'buy-price') {
+                        buyPriceInput.value = rawValue;
+                    } else if (this.id === 'sell-price') {
+                        sellPriceInput.value = rawValue;
+                    }
+                    
                     calculateCatalyst();
                     saveCalculatorData();
-                }
-                if (this.id === 'buy-price' || this.id === 'sell-price') {
-                    // Для трекера обновляем через setTimeout
-                    setTimeout(() => {
-                        // Здесь ничего не делаем, просто сохраняем
-                    }, 100);
                 }
             });
         });
