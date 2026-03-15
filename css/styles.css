@@ -40,7 +40,7 @@ input {
 }
 
 .app-container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -865,20 +865,4 @@ input:invalid {
     .result-value {
         font-size: 14px !important;
     }
-}
-/* ===== ЧУТЬ УМЕНЬШАЕМ ОКОШКИ ===== */
-.result-item {
-    padding-top: 8px;
-    padding-bottom: 8px;
-}
-
-.result-value {
-    margin-top: 2px;
-    margin-bottom: 2px;
-}
-
-.result-item {
-    padding-top: 6px;
-    padding-bottom: 6px;
-    min-height: 60px; /* можно поиграть с цифрой */
 }
