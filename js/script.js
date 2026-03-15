@@ -1,4 +1,4 @@
-// script.js - ПОЛНАЯ ВЕРСИЯ С АВТОВВОДОМ
+// script.js - ПОЛНАЯ ВЕРСИЯ С ИСТОРИЕЙ СДЕЛОК
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Stalcraft Trade Tools loaded');
@@ -63,16 +63,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const sellPriceInput = document.getElementById('sell-price');
     const resellTaxCheckbox = document.getElementById('resell-tax');
     const addButton = document.getElementById('add-deal');
+    const clearButton = document.getElementById('clear-history');
     
-    // Элементы для текущей сделки
-    const currentCostEl = document.getElementById('current-cost');
-    const currentRevenueEl = document.getElementById('current-revenue');
-    const currentProfitEl = document.getElementById('current-profit');
+    const totalSpentEl = document.getElementById('total-spent');
+    const totalRevenueEl = document.getElementById('total-revenue');
+    const totalProfitEl = document.getElementById('total-profit');
+    const dealsCountEl = document.getElementById('deals-count');
+    
+    const dealsList = document.getElementById('deals-list');
+    const emptyState = document.getElementById('empty-state');
+    
+    let deals = [];
     
     // ===== ОБЩАЯ ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ЧИСЛА =====
     function getNumber(value) {
         if (!value) return 0;
-        // Убираем все кроме цифр
         const num = parseInt(value.toString().replace(/\D/g, ''));
         return isNaN(num) ? 0 : num;
     }
@@ -128,7 +133,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const priceCatalyst = getNumber(priceCatalystInput?.value) || 4135;
         const useTax = useTaxCheckbox?.checked || false;
         
-        // Стоимость сахара
         const costOneSugarCraft = (
             CRAFT.SUGAR.SLATS * priceSlast + 
             CRAFT.SUGAR.PLASMA * pricePlasma + 
@@ -187,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (useTax) revenue = revenue * 0.95;
         const profit = revenue - totalCost;
         
-        // Вывод результатов
         if (resultOutput) resultOutput.textContent = catalystsProduced.toLocaleString('ru-RU');
         if (resultCost) resultCost.textContent = formatMoney(totalCost);
         if (resultRevenue) resultRevenue.textContent = formatMoney(revenue);
@@ -242,31 +245,49 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // ===== ТРЕКЕР - АВТОВВОД ДЛЯ ТЕКУЩЕЙ СДЕЛКИ =====
+    // ===== ТРЕКЕР ПЕРЕПРОДАЖ =====
     
-    // Обновление результатов текущей сделки
-    function updateCurrentDeal() {
-        const buyPrice = getNumber(buyPriceInput?.value);
-        const sellPrice = getNumber(sellPriceInput?.value);
-        const useTax = resellTaxCheckbox?.checked || false;
+    function loadDeals() {
+        try {
+            const saved = localStorage.getItem('stalcraft_resells');
+            if (saved) {
+                deals = JSON.parse(saved);
+            } else {
+                // Тестовые данные
+                deals = [
+                    { id: 1, name: 'Полено +15', buyPrice: 10100000, sellPrice: 12000000, useTax: true },
+                    { id: 2, name: 'Артефакт Капля', buyPrice: 45000, sellPrice: 65000, useTax: true }
+                ];
+                saveDeals();
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки:', error);
+            deals = [];
+        }
         
-        let revenue = sellPrice;
-        if (useTax) revenue = sellPrice * 0.95;
-        const profit = revenue - buyPrice;
-        
-        if (currentCostEl) currentCostEl.textContent = formatMoney(buyPrice);
-        if (currentRevenueEl) currentRevenueEl.textContent = formatMoney(revenue);
-        if (currentProfitEl) {
-            currentProfitEl.textContent = formatMoney(profit, true);
-            currentProfitEl.style.color = profit >= 0 ? '#00ff9d' : '#ff4757';
+        renderDeals();
+        updateStats();
+    }
+    
+    function saveDeals() {
+        try {
+            localStorage.setItem('stalcraft_resells', JSON.stringify(deals));
+        } catch (error) {
+            console.error('Ошибка сохранения:', error);
         }
     }
     
-    // Добавление сделки (просто очищает поля)
+    function calculateProfit(buyPrice, sellPrice, useTax) {
+        let revenue = sellPrice;
+        if (useTax) revenue = sellPrice * 0.95;
+        return revenue - buyPrice;
+    }
+    
     function addDeal() {
         const name = itemNameInput?.value.trim();
         const buyPrice = getNumber(buyPriceInput?.value);
         const sellPrice = getNumber(sellPriceInput?.value);
+        const useTax = resellTaxCheckbox?.checked || false;
         
         if (!name) {
             alert('Введите название предмета!');
@@ -278,14 +299,95 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Очистка полей
-        if (itemNameInput) itemNameInput.value = '';
-        if (buyPriceInput) buyPriceInput.value = '0';
-        if (sellPriceInput) sellPriceInput.value = '0';
+        const newDeal = {
+            id: Date.now(),
+            name: name,
+            buyPrice: buyPrice,
+            sellPrice: sellPrice,
+            useTax: useTax
+        };
         
-        // Обновляем результаты
-        updateCurrentDeal();
+        deals.unshift(newDeal);
+        saveDeals();
+        
+        itemNameInput.value = '';
+        buyPriceInput.value = '0';
+        sellPriceInput.value = '0';
+        
+        renderDeals();
+        updateStats();
         showNotification('Сделка добавлена!');
+    }
+    
+    window.deleteDeal = function(id) {
+        deals = deals.filter(deal => deal.id !== id);
+        saveDeals();
+        renderDeals();
+        updateStats();
+        showNotification('Сделка удалена');
+    };
+    
+    function clearAllDeals() {
+        if (deals.length === 0) return;
+        if (confirm('Вы уверены? Вся история будет удалена!')) {
+            deals = [];
+            saveDeals();
+            renderDeals();
+            updateStats();
+            showNotification('История очищена');
+        }
+    }
+    
+    function renderDeals() {
+        if (!dealsList || !emptyState) return;
+        
+        if (deals.length === 0) {
+            dealsList.innerHTML = '';
+            emptyState.style.display = 'block';
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        let html = '';
+        
+        deals.forEach(deal => {
+            const profit = calculateProfit(deal.buyPrice, deal.sellPrice, deal.useTax);
+            const profitClass = profit >= 0 ? 'profit-positive' : 'profit-negative';
+            
+            html += `<tr>
+                <td>${deal.name}</td>
+                <td>${formatMoney(deal.buyPrice)}</td>
+                <td>${formatMoney(deal.sellPrice)}</td>
+                <td>${deal.useTax ? 'Да' : 'Нет'}</td>
+                <td class="${profitClass}">${formatMoney(profit, true)}</td>
+                <td><button class="delete-btn" onclick="deleteDeal(${deal.id})"><i class="fas fa-times"></i></button></td>
+            </tr>`;
+        });
+        
+        dealsList.innerHTML = html;
+    }
+    
+    function updateStats() {
+        if (!totalSpentEl || !totalRevenueEl || !totalProfitEl || !dealsCountEl) return;
+        
+        let totalSpent = 0;
+        let totalRevenue = 0;
+        
+        deals.forEach(deal => {
+            totalSpent += deal.buyPrice;
+            let revenue = deal.sellPrice;
+            if (deal.useTax) revenue = deal.sellPrice * 0.95;
+            totalRevenue += revenue;
+        });
+        
+        const totalProfit = totalRevenue - totalSpent;
+        
+        totalSpentEl.textContent = formatMoney(totalSpent);
+        totalRevenueEl.textContent = formatMoney(totalRevenue);
+        totalProfitEl.textContent = formatMoney(totalProfit, true);
+        dealsCountEl.textContent = deals.length;
+        
+        totalProfitEl.style.color = totalProfit >= 0 ? '#00ff9d' : '#ff4757';
     }
     
     // ===== ОБЩИЕ ФУНКЦИИ =====
@@ -362,24 +464,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // ===== ОБРАБОТЧИКИ ТРЕКЕРА (АВТОВВОД) =====
+    // ===== ОБРАБОТЧИКИ ТРЕКЕРА =====
     
-    const resellInputs = [buyPriceInput, sellPriceInput, resellTaxCheckbox];
-    
-    resellInputs.forEach(input => {
-        if (!input) return;
-        
-        if (input.type === 'checkbox') {
-            input.addEventListener('change', updateCurrentDeal);
-        } else {
-            input.addEventListener('input', updateCurrentDeal);
-        }
-    });
-    
-    // Обработчик кнопки
     if (addButton) addButton.addEventListener('click', addDeal);
+    if (clearButton) clearButton.addEventListener('click', clearAllDeals);
     
-    // Enter для добавления
     [itemNameInput, buyPriceInput, sellPriceInput].forEach(input => {
         if (input) {
             input.addEventListener('keypress', (e) => {
@@ -453,6 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     loadCalculatorData();
+    loadDeals();
     calculateCatalyst();
-    updateCurrentDeal();
+    updateStats();
 });
