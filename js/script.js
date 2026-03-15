@@ -77,24 +77,59 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputs = [
             slastInput, dustInput, plasmaInput, sugarInput,
             priceSlastInput, priceDustInput, pricePlasmaInput,
-            priceCatalystInput
+            priceCatalystInput, buyPriceInput, sellPriceInput  // добавили поля трекера
         ];
         
         inputs.forEach(input => {
             if (!input) return;
             
             input.addEventListener('input', function() {
-                this.value = this.value.replace(/[^\d]/g, '');
+                // Сохраняем позицию курсора
+                const cursorPos = this.selectionStart;
+                const oldLength = this.value.length;
                 
-                if (this.value.length > 8) {
-                    this.value = this.value.substring(0, 8);
+                // Убираем все НЕ цифры
+                let rawValue = this.value.replace(/[^\d]/g, '');
+                
+                // Ограничиваем длину
+                if (rawValue.length > 8) {
+                    rawValue = rawValue.substring(0, 8);
                 }
                 
-                calculateCatalyst();
-                saveCalculatorData();
+                // Добавляем пробелы (форматируем)
+                let formattedValue = '';
+                for (let i = 0; i < rawValue.length; i++) {
+                    if (i > 0 && (rawValue.length - i) % 3 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += rawValue[i];
+                }
+                
+                this.value = formattedValue;
+                
+                // Восстанавливаем позицию курсора
+                const newLength = this.value.length;
+                const diff = newLength - oldLength;
+                this.setSelectionRange(cursorPos + diff, cursorPos + diff);
+                
+                // Для расчетов используем число без пробелов
+                const numericValue = parseInt(rawValue) || 0;
+                
+                // Запускаем соответствующий расчет
+                if (this.id.includes('price') || this.id.includes('input')) {
+                    calculateCatalyst();
+                    saveCalculatorData();
+                }
+                if (this.id === 'buy-price' || this.id === 'sell-price') {
+                    // Для трекера обновляем через setTimeout
+                    setTimeout(() => {
+                        // Здесь ничего не делаем, просто сохраняем
+                    }, 100);
+                }
             });
         });
         
+        // Обработка для поля энергии (оставляем как есть)
         if (priceEnergyInput) {
             priceEnergyInput.addEventListener('input', function() {
                 let value = this.value.replace(',', '.');
