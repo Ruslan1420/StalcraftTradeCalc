@@ -17,7 +17,6 @@
                 <h1>Stalcraft Trade Tools</h1>
             </div>
             
-            <!-- Переключатель режимов -->
             <div class="mode-switcher">
                 <button class="mode-btn active" data-mode="catalyst">
                     <i class="fas fa-flask"></i>
@@ -31,14 +30,15 @@
         </header>
         
         <main class="main-content">
-            <!-- ===== РЕЖИМ 1: КАЛЬКУЛЯТОР КАТАЛИЗАТОРОВ ===== -->
+            <!-- ===== КАЛЬКУЛЯТОР КАТАЛИЗАТОРОВ ===== -->
             <div id="catalyst-mode" class="mode-panel active">
+                <!-- Весь ваш существующий HTML для калькулятора -->
                 <div class="top-section">
                     <div class="price-box">
                         <div class="price-control">
                             <label>Цена катализатора:</label>
                             <div class="price-input">
-                                <input type="number" id="price-catalyst" value="4135" min="0" step="10" class="no-spinner" maxlength="8">
+                                <input type="text" id="price-catalyst" value="4135" class="no-spinner">
                                 <span>₽</span>
                             </div>
                         </div>
@@ -89,7 +89,7 @@
                                     <i class="fas fa-leaf"></i>
                                     <span>Мякоть сластены</span>
                                 </div>
-                                <input type="number" id="input-slast" value="10" min="0" step="1" class="no-spinner" maxlength="8">
+                                <input type="text" id="input-slast" value="10" class="no-spinner">
                             </div>
                             
                             <div class="resource-item">
@@ -97,7 +97,7 @@
                                     <i class="fas fa-star"></i>
                                     <span>Аномальная пыль</span>
                                 </div>
-                                <input type="number" id="input-dust" value="300" min="0" step="10" class="no-spinner" maxlength="8">
+                                <input type="text" id="input-dust" value="300" class="no-spinner">
                             </div>
                             
                             <div class="resource-item">
@@ -105,7 +105,7 @@
                                     <i class="fas fa-fire"></i>
                                     <span>Аномальная плазма</span>
                                 </div>
-                                <input type="number" id="input-plasma" value="1" min="0" step="1" class="no-spinner" maxlength="8">
+                                <input type="text" id="input-plasma" value="1" class="no-spinner">
                             </div>
                             
                             <div class="resource-item">
@@ -113,7 +113,7 @@
                                     <i class="fas fa-cube"></i>
                                     <span>Светящийся сахар</span>
                                 </div>
-                                <input type="number" id="input-sugar" value="0" min="0" step="1" class="no-spinner" maxlength="8">
+                                <input type="text" id="input-sugar" value="0" class="no-spinner">
                             </div>
                         </div>
                         
@@ -148,7 +148,7 @@
                                     <span>Мякоть сластены</span>
                                 </div>
                                 <div class="price-input">
-                                    <input type="number" id="price-slast" value="7800" min="0" step="10" class="no-spinner" maxlength="8">
+                                    <input type="text" id="price-slast" value="7800" class="no-spinner">
                                     <span>₽</span>
                                 </div>
                             </div>
@@ -159,7 +159,7 @@
                                     <span>Аномальная пыль</span>
                                 </div>
                                 <div class="price-input">
-                                    <input type="number" id="price-dust" value="275" min="0" step="1" class="no-spinner" maxlength="8">
+                                    <input type="text" id="price-dust" value="275" class="no-spinner">
                                     <span>₽</span>
                                 </div>
                             </div>
@@ -170,7 +170,7 @@
                                     <span>Аномальная плазма</span>
                                 </div>
                                 <div class="price-input">
-                                    <input type="number" id="price-plasma" value="1500" min="0" step="10" class="no-spinner" maxlength="8">
+                                    <input type="text" id="price-plasma" value="1500" class="no-spinner">
                                     <span>₽</span>
                                 </div>
                             </div>
@@ -181,7 +181,7 @@
                                     <span>Светящийся сахар</span>
                                 </div>
                                 <div class="price-input disabled">
-                                    <input type="number" id="price-sugar" value="0" min="0" step="10" class="no-spinner" readonly disabled>
+                                    <input type="text" id="price-sugar" value="0" class="no-spinner" readonly disabled>
                                     <span>₽</span>
                                 </div>
                             </div>
@@ -193,7 +193,7 @@
                                 <span>Энергия (1200 за крафт)</span>
                             </div>
                             <div class="price-input">
-                                <input type="text" id="price-energy" value="1.2" class="decimal-input" maxlength="11">
+                                <input type="text" id="price-energy" value="1.2" class="decimal-input">
                                 <span>₽</span>
                             </div>
                             <div class="energy-hint">
@@ -205,7 +205,7 @@
                 </div>
             </div>
             
-            <!-- ===== РЕЖИМ 2: ТРЕКЕР ПЕРЕПРОДАЖ ===== -->
+            <!-- ===== ТРЕКЕР ПЕРЕПРОДАЖ ===== -->
             <div id="resell-mode" class="mode-panel">
                 <div class="top-section">
                     <div class="price-box">
@@ -213,14 +213,14 @@
                         
                         <div class="form-group">
                             <label>Название предмета</label>
-                            <input type="text" id="item-name" placeholder="Например: Артефакт..." class="text-input">
+                            <input type="text" id="item-name" placeholder="Например: Полено +15" class="text-input">
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Цена покупки</label>
                                 <div class="price-input">
-                                    <input type="number" id="buy-price" value="0" min="0" class="no-spinner">
+                                    <input type="text" id="buy-price" value="0" class="no-spinner">
                                     <span>₽</span>
                                 </div>
                             </div>
@@ -228,7 +228,7 @@
                             <div class="form-group">
                                 <label>Цена продажи</label>
                                 <div class="price-input">
-                                    <input type="number" id="sell-price" value="0" min="0" class="no-spinner">
+                                    <input type="text" id="sell-price" value="0" class="no-spinner">
                                     <span>₽</span>
                                 </div>
                             </div>
@@ -246,62 +246,36 @@
                         </button>
                     </div>
                     
-                    <div class="stats-box">
-                        <h2><i class="fas fa-chart-line"></i> Общая статистика</h2>
-                        
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-label">Всего затрат</div>
-                                <div class="stat-value" id="total-spent">0 ₽</div>
+                    <!-- РЕЗУЛЬТАТЫ ТЕКУЩЕЙ СДЕЛКИ -->
+                    <div class="results-box">
+                        <h2 style="color: var(--primary); font-family: var(--font-heading); font-size: 18px; margin-bottom: 15px;">
+                            <i class="fas fa-chart-line"></i> Результаты сделки
+                        </h2>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Затраты</div>
+                                <div class="result-value" id="current-cost">0 ₽</div>
+                                <div class="result-unit">покупка</div>
                             </div>
                             
-                            <div class="stat-item">
-                                <div class="stat-label">Всего доход</div>
-                                <div class="stat-value" id="total-revenue">0 ₽</div>
+                            <div class="result-item">
+                                <div class="result-label">Выручка</div>
+                                <div class="result-value" id="current-revenue">0 ₽</div>
+                                <div class="result-unit">после налога</div>
                             </div>
                             
-                            <div class="stat-item highlight">
-                                <div class="stat-label">Чистая прибыль</div>
-                                <div class="stat-value" id="total-profit">0 ₽</div>
+                            <div class="result-item highlight">
+                                <div class="result-label">Прибыль</div>
+                                <div class="result-value" id="current-profit">0 ₽</div>
+                                <div class="result-unit">чистая</div>
                             </div>
                             
-                            <div class="stat-item">
-                                <div class="stat-label">Кол-во сделок</div>
-                                <div class="stat-value" id="deals-count">0</div>
+                            <div class="result-item">
+                                <div class="result-label">Статус</div>
+                                <div class="result-value" id="current-status">—</div>
+                                <div class="result-unit">ожидание</div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="history-section">
-                    <div class="history-header">
-                        <h2><i class="fas fa-history"></i> История продаж</h2>
-                        <button class="clear-btn" id="clear-history">
-                            <i class="fas fa-trash"></i> Очистить всё
-                        </button>
-                    </div>
-                    
-                    <div class="table-container">
-                        <table class="deals-table" id="deals-table">
-                            <thead>
-                                <tr>
-                                    <th>Предмет</th>
-                                    <th>Покупка</th>
-                                    <th>Продажа</th>
-                                    <th>Налог</th>
-                                    <th>Прибыль</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody id="deals-list">
-                                <!-- Сделки будут добавляться сюда -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="empty-state" id="empty-state">
-                        <i class="fas fa-shopping-bag"></i>
-                        <p>Сделок пока нет. Добавьте первую!</p>
                     </div>
                 </div>
             </div>
@@ -312,7 +286,6 @@
         </footer>
     </div>
 
-    <!-- Подключаем единый скрипт -->
     <script src="js/script.js"></script>
 </body>
 </html>
