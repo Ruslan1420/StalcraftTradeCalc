@@ -48,15 +48,31 @@
                             </label>
                         </div>
                     </div>
-                        <div class="results-box">
-                            <h2 style="color: var(--primary); font-family: var(--font-heading); font-size: 18px; margin-bottom: 15px;">
-                                <i class="fas fa-chart-line"></i> Информация по сделке
-                            </h2>
-                            <div class="results-grid">
-                                <div class="result-item">...</div>
-                                <div class="result-item">...</div>
-                                <div class="result-item highlight">...</div>
-                                <div class="result-item">...</div>
+                    
+                    <div class="results-box">
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Выход</div>
+                                <div class="result-value" id="result-output">0</div>
+                                <div class="result-unit">катализаторов</div>
+                            </div>
+                            
+                            <div class="result-item">
+                                <div class="result-label">Затраты</div>
+                                <div class="result-value" id="result-cost">0 ₽</div>
+                                <div class="result-unit">себестоимость</div>
+                            </div>
+                            
+                            <div class="result-item">
+                                <div class="result-label">Выручка</div>
+                                <div class="result-value" id="result-revenue">0 ₽</div>
+                                <div class="result-unit">после продажи</div>
+                            </div>
+                            
+                            <div class="result-item highlight">
+                                <div class="result-label">Прибыль</div>
+                                <div class="result-value" id="result-profit">0 ₽</div>
+                                <div class="result-unit">чистая прибыль</div>
                             </div>
                         </div>
                     </div>
