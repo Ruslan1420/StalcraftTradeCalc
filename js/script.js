@@ -310,8 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function addDeal() {
         const name = itemNameInput?.value.trim();
-        const buyPrice = parseInt(buyPriceInput?.value) || 0;
-        const sellPrice = parseInt(sellPriceInput?.value) || 0;
+        const buyPrice = parseInt(buyPriceInput?.value.replace(/\s/g, '')) || 0;  // Убираем пробелы
+        const sellPrice = parseInt(sellPriceInput?.value.replace(/\s/g, '')) || 0; // Убираем пробелы
         const useTax = resellTaxCheckbox?.checked || false;
         
         if (!name) { alert('Введите название предмета!'); return; }
@@ -329,6 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         deals.unshift(newDeal);
         saveDeals();
         
+        // Очищаем поля
         if (itemNameInput) itemNameInput.value = '';
         if (buyPriceInput) buyPriceInput.value = '0';
         if (sellPriceInput) sellPriceInput.value = '0';
