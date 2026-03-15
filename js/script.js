@@ -1,4 +1,4 @@
-// script.js - ПОЛНАЯ ВЕРСИЯ С ИСТОРИЕЙ СДЕЛОК
+// script.js - ПОЛНАЯ РАБОЧАЯ ВЕРСИЯ
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Stalcraft Trade Tools loaded');
@@ -75,9 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let deals = [];
     
-    // ===== ОБЩАЯ ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ЧИСЛА =====
+    // ===== ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ЧИСЛА =====
     function getNumber(value) {
         if (!value) return 0;
+        // Убираем все кроме цифр
         const num = parseInt(value.toString().replace(/\D/g, ''));
         return isNaN(num) ? 0 : num;
     }
@@ -440,6 +441,41 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(style);
     
+    // ===== УБИРАЕМ 0 ПРИ ВВОДЕ =====
+    function setupZeroClearing() {
+        const numberInputs = [
+            document.getElementById('buy-price'),
+            document.getElementById('sell-price'),
+            document.getElementById('price-catalyst'),
+            document.getElementById('price-slast'),
+            document.getElementById('price-dust'),
+            document.getElementById('price-plasma'),
+            document.getElementById('price-energy'),
+            document.getElementById('input-slast'),
+            document.getElementById('input-dust'),
+            document.getElementById('input-plasma'),
+            document.getElementById('input-sugar')
+        ];
+        
+        numberInputs.forEach(input => {
+            if (!input) return;
+            
+            // При фокусе - если значение 0, очищаем поле
+            input.addEventListener('focus', function() {
+                if (this.value == 0 || this.value === '0') {
+                    this.value = '';
+                }
+            });
+            
+            // При потере фокуса - если поле пустое, ставим 0
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.value = '0';
+                }
+            });
+        });
+    }
+    
     // ===== ОБРАБОТЧИКИ КАЛЬКУЛЯТОРА =====
     
     const calcInputs = [
@@ -465,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // ===== ОБРАБОТЧИКИ ТРЕКЕРА =====
-
+    
     // Автообновление статистики при вводе
     if (buyPriceInput) {
         buyPriceInput.addEventListener('input', function() {
@@ -556,47 +592,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (sugarInput) sugarInput.value = sugarData.sugar;
             
             calculateCatalyst();
-        });
-    }
-    function setupZeroClearing() {
-        const numberInputs = [
-            document.getElementById('buy-price'),
-            document.getElementById('sell-price'),
-            document.getElementById('price-catalyst'),
-            document.getElementById('price-slast'),
-            document.getElementById('price-dust'),
-            document.getElementById('price-plasma'),
-            document.getElementById('price-energy'),
-            document.getElementById('input-slast'),
-            document.getElementById('input-dust'),
-            document.getElementById('input-plasma'),
-            document.getElementById('input-sugar')
-        ];
-        
-        numberInputs.forEach(input => {
-            if (!input) return;
-            
-            // При фокусе - если значение 0, очищаем поле
-            input.addEventListener('focus', function() {
-                if (this.value == 0 || this.value === '0' || this.value === '0 ₽') {
-                    this.value = '';
-                }
-            });
-            
-            // При потере фокуса - если поле пустое, ставим 0
-            input.addEventListener('blur', function() {
-                if (this.value === '') {
-                    this.value = '0';
-                    // Запускаем расчет для этого поля
-                    if (this.id.includes('price') || this.id.includes('input')) {
-                        calculateCatalyst();
-                        saveCalculatorData();
-                    }
-                    if (this.id === 'buy-price' || this.id === 'sell-price') {
-                        updateStats();
-                    }
-                }
-            });
         });
     }
     
