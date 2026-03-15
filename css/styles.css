@@ -41,7 +41,7 @@ input {
 }
 
 .app-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -868,13 +868,6 @@ input:invalid {
     }
 }
 
-/* Широкие поля для больших чисел */
-#resell-mode .price-input input {
-    font-size: 20px;
-    padding: 12px 50px 12px 15px;
-    letter-spacing: 0.5px;
-}
-
 /* Чтобы 19 000 000 помещалось */
 #resell-mode .form-row {
     grid-template-columns: 1fr 1fr;
@@ -896,4 +889,19 @@ input:invalid {
         font-size: 18px;
         padding: 10px 40px 10px 12px;
     }
+}
+
+/* Расширяем интерфейс для режима перепродаж */
+#resell-mode .top-section {
+    grid-template-columns: 400px 1fr;  /* Было 300px, стало 400px */
+    gap: 25px;
+}
+
+#resell-mode .price-box {
+    padding: 25px;  /* Чуть больше отступов */
+}
+
+#resell-mode .price-input input {
+    font-size: 18px;  /* Оставляем нормальный шрифт */
+    padding: 12px 45px 12px 15px;
 }
