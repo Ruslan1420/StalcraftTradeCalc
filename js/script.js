@@ -1,4 +1,4 @@
-// script.js - Объединенный калькулятор и трекер
+// script.js - ПОЛНАЯ ВЕРСИЯ С АВТОВВОДОМ
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Stalcraft Trade Tools loaded');
@@ -30,14 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const savedBtn = document.querySelector(`[data-mode="${savedMode}"]`);
     if (savedBtn) savedBtn.click();
     
-    // ===== ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ЧИСЛА =====
-    function getNumberFromInput(input) {
-        if (!input) return 0;
-        let value = input.value.replace(/\s/g, '');
-        if (value === '') return 0;
-        return parseInt(value) || 0;
-    }
-    
     // ===== КАЛЬКУЛЯТОР КАТАЛИЗАТОРОВ =====
     
     const CRAFT = {
@@ -46,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ENERGY_PER_CRAFT: 1200
     };
     
+    // Элементы калькулятора
     const slastInput = document.getElementById('input-slast');
     const dustInput = document.getElementById('input-dust');
     const plasmaInput = document.getElementById('input-plasma');
@@ -64,51 +57,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultRevenue = document.getElementById('result-revenue');
     const resultProfit = document.getElementById('result-profit');
     
-    // ===== ФУНКЦИИ КАЛЬКУЛЯТОРА =====
+    // ===== ЭЛЕМЕНТЫ ТРЕКЕРА =====
+    const itemNameInput = document.getElementById('item-name');
+    const buyPriceInput = document.getElementById('buy-price');
+    const sellPriceInput = document.getElementById('sell-price');
+    const resellTaxCheckbox = document.getElementById('resell-tax');
+    const addButton = document.getElementById('add-deal');
     
-    function setupCalculatorLimits() {
-        const inputs = [
-            slastInput, dustInput, plasmaInput, sugarInput,
-            priceSlastInput, priceDustInput, pricePlasmaInput,
-            priceCatalystInput
-        ];
-        
-        inputs.forEach(input => {
-            if (!input) return;
-            
-            input.addEventListener('input', function() {
-                this.value = this.value.replace(/[^\d]/g, '');
-                
-                if (this.value.length > 8) {
-                    this.value = this.value.substring(0, 8);
-                }
-                
-                calculateCatalyst();
-                saveCalculatorData();
-            });
-        });
-        
-        if (priceEnergyInput) {
-            priceEnergyInput.addEventListener('input', function() {
-                let value = this.value.replace(',', '.');
-                value = value.replace(/[^\d.]/g, '');
-                
-                const parts = value.split('.');
-                if (parts.length > 2) {
-                    value = parts[0] + '.' + parts.slice(1).join('');
-                }
-                
-                if (parts.length === 2) {
-                    parts[1] = parts[1].slice(0, 2);
-                    value = parts[0] + '.' + parts[1];
-                }
-                
-                this.value = value;
-                calculateCatalyst();
-                saveCalculatorData();
-            });
-        }
+    // Элементы для текущей сделки
+    const currentCostEl = document.getElementById('current-cost');
+    const currentRevenueEl = document.getElementById('current-revenue');
+    const currentProfitEl = document.getElementById('current-profit');
+    
+    // ===== ОБЩАЯ ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ЧИСЛА =====
+    function getNumber(value) {
+        if (!value) return 0;
+        // Убираем все кроме цифр
+        const num = parseInt(value.toString().replace(/\D/g, ''));
+        return isNaN(num) ? 0 : num;
     }
+    
+    // ===== ФУНКЦИИ КАЛЬКУЛЯТОРА =====
     
     function calculateResourcesFromSugar(sugarAmount) {
         const sugar = sugarAmount || 0;
@@ -147,19 +116,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function calculateCatalyst() {
-        const slast = getNumberFromInput(slastInput);
-        const dust = getNumberFromInput(dustInput);
-        const plasma = getNumberFromInput(plasmaInput);
-        const sugar = getNumberFromInput(sugarInput);
+        const slast = getNumber(slastInput?.value);
+        const dust = getNumber(dustInput?.value);
+        const plasma = getNumber(plasmaInput?.value);
+        const sugar = getNumber(sugarInput?.value);
         
-        const priceSlast = getNumberFromInput(priceSlastInput) || 7800;
-        const priceDust = getNumberFromInput(priceDustInput) || 275;
-        const pricePlasma = getNumberFromInput(pricePlasmaInput) || 1500;
-        const priceEnergy = parseFloat(priceEnergyInput?.value.replace(',', '.')) || 1.2;
-        const priceCatalyst = getNumberFromInput(priceCatalystInput) || 4135;
+        const priceSlast = getNumber(priceSlastInput?.value) || 7800;
+        const priceDust = getNumber(priceDustInput?.value) || 275;
+        const pricePlasma = getNumber(pricePlasmaInput?.value) || 1500;
+        const priceEnergy = parseFloat(priceEnergyInput?.value) || 1.2;
+        const priceCatalyst = getNumber(priceCatalystInput?.value) || 4135;
         const useTax = useTaxCheckbox?.checked || false;
         
-        const costOneSugarCraft = (CRAFT.SUGAR.SLATS * priceSlast + CRAFT.SUGAR.PLASMA * pricePlasma + CRAFT.SUGAR.DUST * priceDust + CRAFT.ENERGY_PER_CRAFT * priceEnergy) / CRAFT.SUGAR.OUTPUT;
+        // Стоимость сахара
+        const costOneSugarCraft = (
+            CRAFT.SUGAR.SLATS * priceSlast + 
+            CRAFT.SUGAR.PLASMA * pricePlasma + 
+            CRAFT.SUGAR.DUST * priceDust + 
+            CRAFT.ENERGY_PER_CRAFT * priceEnergy
+        ) / CRAFT.SUGAR.OUTPUT;
+        
         if (priceSugarInput) priceSugarInput.value = Math.round(costOneSugarCraft);
         
         let catalystsProduced = 0;
@@ -170,17 +146,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const neededSugar = catalystCrafts * CRAFT.CATALYST.SUGAR;
             const neededDustForCatalyst = catalystCrafts * CRAFT.CATALYST.DUST;
             const sugarCrafts = Math.ceil(neededSugar / CRAFT.SUGAR.OUTPUT);
-            const neededSlatsForSugar = sugarCrafts * CRAFT.SUGAR.SLATS;
-            const neededPlasmaForSugar = sugarCrafts * CRAFT.SUGAR.PLASMA;
-            const neededDustForSugar = sugarCrafts * CRAFT.SUGAR.DUST;
             
             catalystsProduced = catalystCrafts * CRAFT.CATALYST.OUTPUT;
+            
             const totalEnergyUsed = (sugarCrafts + catalystCrafts) * CRAFT.ENERGY_PER_CRAFT;
             const totalEnergyCost = totalEnergyUsed * priceEnergy;
-            const costSlats = neededSlatsForSugar * priceSlast;
-            const costPlasma = neededPlasmaForSugar * pricePlasma;
-            const costDust = (neededDustForSugar + neededDustForCatalyst) * priceDust;
-            totalCost = costSlats + costPlasma + costDust + totalEnergyCost;
+            
+            totalCost = (
+                sugarCrafts * CRAFT.SUGAR.SLATS * priceSlast +
+                sugarCrafts * CRAFT.SUGAR.PLASMA * pricePlasma +
+                (sugarCrafts * CRAFT.SUGAR.DUST + neededDustForCatalyst) * priceDust +
+                totalEnergyCost
+            );
         } else {
             const sugarFromSlats = Math.floor(slast / CRAFT.SUGAR.SLATS);
             const sugarFromPlasma = Math.floor(plasma / CRAFT.SUGAR.PLASMA);
@@ -188,27 +165,29 @@ document.addEventListener('DOMContentLoaded', function() {
             const maxSugarCrafts = Math.min(sugarFromSlats, sugarFromPlasma, sugarFromDust);
             const sugarProduced = maxSugarCrafts * CRAFT.SUGAR.OUTPUT;
             const remainingDust = dust - (maxSugarCrafts * CRAFT.SUGAR.DUST);
+            
             const catalystFromSugar = Math.floor(sugarProduced / CRAFT.CATALYST.SUGAR);
             const catalystFromDust = Math.floor(remainingDust / CRAFT.CATALYST.DUST);
             const maxCatalystCrafts = Math.min(catalystFromSugar, catalystFromDust);
             
             catalystsProduced = maxCatalystCrafts * CRAFT.CATALYST.OUTPUT;
+            
             const totalEnergyUsed = (maxSugarCrafts + maxCatalystCrafts) * CRAFT.ENERGY_PER_CRAFT;
             const totalEnergyCost = totalEnergyUsed * priceEnergy;
-            const usedSlatsForSugar = maxSugarCrafts * CRAFT.SUGAR.SLATS;
-            const usedPlasmaForSugar = maxSugarCrafts * CRAFT.SUGAR.PLASMA;
-            const usedDustForSugar = maxSugarCrafts * CRAFT.SUGAR.DUST;
-            const usedDustForCatalyst = maxCatalystCrafts * CRAFT.CATALYST.DUST;
-            const costSlats = usedSlatsForSugar * priceSlast;
-            const costPlasma = usedPlasmaForSugar * pricePlasma;
-            const costDust = (usedDustForSugar + usedDustForCatalyst) * priceDust;
-            totalCost = costSlats + costPlasma + costDust + totalEnergyCost;
+            
+            totalCost = (
+                maxSugarCrafts * CRAFT.SUGAR.SLATS * priceSlast +
+                maxSugarCrafts * CRAFT.SUGAR.PLASMA * pricePlasma +
+                (maxSugarCrafts * CRAFT.SUGAR.DUST + maxCatalystCrafts * CRAFT.CATALYST.DUST) * priceDust +
+                totalEnergyCost
+            );
         }
         
         let revenue = catalystsProduced * priceCatalyst;
         if (useTax) revenue = revenue * 0.95;
         const profit = revenue - totalCost;
         
+        // Вывод результатов
         if (resultOutput) resultOutput.textContent = catalystsProduced.toLocaleString('ru-RU');
         if (resultCost) resultCost.textContent = formatMoney(totalCost);
         if (resultRevenue) resultRevenue.textContent = formatMoney(revenue);
@@ -216,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
             resultProfit.textContent = formatMoney(profit);
             resultProfit.style.color = profit >= 0 ? '#00ff9d' : '#ff4757';
         }
+        
         saveCalculatorData();
     }
     
@@ -232,11 +212,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 priceEnergy: priceEnergyInput?.value,
                 priceCatalyst: priceCatalystInput?.value,
                 useTax: useTaxCheckbox?.checked,
-                savedAt: new Date().toISOString()
             };
             localStorage.setItem('stalcraft_calculator', JSON.stringify(data));
         } catch (error) {
-            console.error('Ошибка сохранения калькулятора:', error);
+            console.error('Ошибка сохранения:', error);
         }
     }
     
@@ -245,206 +224,68 @@ document.addEventListener('DOMContentLoaded', function() {
             const saved = localStorage.getItem('stalcraft_calculator');
             if (saved) {
                 const data = JSON.parse(saved);
-                if (data.slast !== undefined && slastInput) slastInput.value = data.slast;
-                if (data.dust !== undefined && dustInput) dustInput.value = data.dust;
-                if (data.plasma !== undefined && plasmaInput) plasmaInput.value = data.plasma;
-                if (data.sugar !== undefined && sugarInput) sugarInput.value = data.sugar;
-                if (data.priceSlast !== undefined && priceSlastInput) priceSlastInput.value = data.priceSlast;
-                if (data.priceDust !== undefined && priceDustInput) priceDustInput.value = data.priceDust;
-                if (data.pricePlasma !== undefined && pricePlasmaInput) pricePlasmaInput.value = data.pricePlasma;
-                if (data.priceEnergy !== undefined && priceEnergyInput) priceEnergyInput.value = data.priceEnergy;
-                if (data.priceCatalyst !== undefined && priceCatalystInput) priceCatalystInput.value = data.priceCatalyst;
-                if (data.useTax !== undefined && useTaxCheckbox) useTaxCheckbox.checked = data.useTax;
-                setTimeout(() => calculateCatalyst(), 100);
+                if (data.slast) slastInput.value = data.slast;
+                if (data.dust) dustInput.value = data.dust;
+                if (data.plasma) plasmaInput.value = data.plasma;
+                if (data.sugar) sugarInput.value = data.sugar;
+                if (data.priceSlast) priceSlastInput.value = data.priceSlast;
+                if (data.priceDust) priceDustInput.value = data.priceDust;
+                if (data.pricePlasma) pricePlasmaInput.value = data.pricePlasma;
+                if (data.priceEnergy) priceEnergyInput.value = data.priceEnergy;
+                if (data.priceCatalyst) priceCatalystInput.value = data.priceCatalyst;
+                if (data.useTax !== undefined) useTaxCheckbox.checked = data.useTax;
+                
+                setTimeout(calculateCatalyst, 100);
             }
         } catch (error) {
-            console.error('Ошибка загрузки калькулятора:', error);
+            console.error('Ошибка загрузки:', error);
         }
     }
     
-    // ===== ТРЕКЕР ПЕРЕПРОДАЖ =====
+    // ===== ТРЕКЕР - АВТОВВОД ДЛЯ ТЕКУЩЕЙ СДЕЛКИ =====
     
-    const itemNameInput = document.getElementById('item-name');
-    const buyPriceInput = document.getElementById('buy-price');
-    const sellPriceInput = document.getElementById('sell-price');
-    const resellTaxCheckbox = document.getElementById('resell-tax');
-    const addButton = document.getElementById('add-deal');
-    const clearButton = document.getElementById('clear-history');
-    
-    const totalSpentEl = document.getElementById('total-spent');
-    const totalRevenueEl = document.getElementById('total-revenue');
-    const totalProfitEl = document.getElementById('total-profit');
-    const dealsCountEl = document.getElementById('deals-count');
-    
-    const dealsList = document.getElementById('deals-list');
-    const emptyState = document.getElementById('empty-state');
-    
-    let deals = [];
-    
-    function loadDeals() {
-        try {
-            const saved = localStorage.getItem('stalcraft_resells');
-            if (saved) deals = JSON.parse(saved);
-        } catch (error) {
-            console.error('Ошибка загрузки сделок:', error);
-            deals = [];
-        }
-        
-        if (deals.length === 0) {
-            deals = [
-                { id: Date.now() - 86400000, name: 'Артефакт "Капля"', buyPrice: 45000, sellPrice: 65000, useTax: true, date: new Date(Date.now() - 86400000).toISOString() },
-                { id: Date.now() - 172800000, name: 'Броня "Скат-3М"', buyPrice: 120000, sellPrice: 155000, useTax: true, date: new Date(Date.now() - 172800000).toISOString() }
-            ];
-            saveDeals();
-        }
-        
-        renderDeals();
-        updateStats();
-    }
-    
-    function saveDeals() {
-        try {
-            localStorage.setItem('stalcraft_resells', JSON.stringify(deals));
-        } catch (error) {
-            console.error('Ошибка сохранения сделок:', error);
-        }
-    }
-    
-    function calculateResellProfit(buyPrice, sellPrice, useTax) {
-        let revenue = sellPrice;
-        if (useTax) revenue = sellPrice * 0.95;
-        return revenue - buyPrice;
-    }
-    
-    // ===== АВТОСЧЕТ ДЛЯ ТРЕКЕРА (КАК В КРАФТАХ) =====
-    function setupResellAutoUpdate() {
-        const resellInputs = [buyPriceInput, sellPriceInput, resellTaxCheckbox];
-        
-        resellInputs.forEach(input => {
-            if (!input) return;
-            
-            if (input.type === 'checkbox') {
-                input.addEventListener('change', function() {
-                    updateStats();
-                    saveDeals();
-                });
-            } else {
-                input.addEventListener('input', function() {
-                    // Сохраняем только цифры
-                    this.value = this.value.replace(/[^\d]/g, '');
-                    
-                    if (this.value.length > 8) {
-                        this.value = this.value.substring(0, 8);
-                    }
-                    
-                    updateStats();
-                    saveDeals();
-                });
-            }
-        });
-    }
-    
-    function addDeal() {
-        const name = itemNameInput?.value.trim();
-        const buyPrice = getNumberFromInput(buyPriceInput);
-        const sellPrice = getNumberFromInput(sellPriceInput);
+    // Обновление результатов текущей сделки
+    function updateCurrentDeal() {
+        const buyPrice = getNumber(buyPriceInput?.value);
+        const sellPrice = getNumber(sellPriceInput?.value);
         const useTax = resellTaxCheckbox?.checked || false;
         
-        if (!name) { 
-            alert('Введите название предмета!'); 
-            return; 
+        let revenue = sellPrice;
+        if (useTax) revenue = sellPrice * 0.95;
+        const profit = revenue - buyPrice;
+        
+        if (currentCostEl) currentCostEl.textContent = formatMoney(buyPrice);
+        if (currentRevenueEl) currentRevenueEl.textContent = formatMoney(revenue);
+        if (currentProfitEl) {
+            currentProfitEl.textContent = formatMoney(profit, true);
+            currentProfitEl.style.color = profit >= 0 ? '#00ff9d' : '#ff4757';
+        }
+    }
+    
+    // Добавление сделки (просто очищает поля)
+    function addDeal() {
+        const name = itemNameInput?.value.trim();
+        const buyPrice = getNumber(buyPriceInput?.value);
+        const sellPrice = getNumber(sellPriceInput?.value);
+        
+        if (!name) {
+            alert('Введите название предмета!');
+            return;
         }
         
-        if (buyPrice <= 0 || sellPrice <= 0) { 
-            alert('Цены должны быть больше 0!'); 
-            return; 
+        if (buyPrice <= 0 || sellPrice <= 0) {
+            alert('Цены должны быть больше 0!');
+            return;
         }
         
-        const newDeal = {
-            id: Date.now(),
-            name: name,
-            buyPrice: buyPrice,
-            sellPrice: sellPrice,
-            useTax: useTax,
-            date: new Date().toISOString()
-        };
-        
-        deals.unshift(newDeal);
-        saveDeals();
-        
+        // Очистка полей
         if (itemNameInput) itemNameInput.value = '';
         if (buyPriceInput) buyPriceInput.value = '0';
         if (sellPriceInput) sellPriceInput.value = '0';
         
-        renderDeals();
-        updateStats();
+        // Обновляем результаты
+        updateCurrentDeal();
         showNotification('Сделка добавлена!');
-    }
-    
-    window.deleteDeal = function(id) {
-        deals = deals.filter(deal => deal.id !== id);
-        saveDeals();
-        renderDeals();
-        updateStats();
-        showNotification('Сделка удалена');
-    };
-    
-    function clearAllDeals() {
-        if (deals.length === 0) return;
-        if (confirm('Вы уверены? Вся история будет удалена!')) {
-            deals = [];
-            saveDeals();
-            renderDeals();
-            updateStats();
-            showNotification('История очищена');
-        }
-    }
-    
-    function renderDeals() {
-        if (!dealsList || !emptyState) return;
-        
-        if (deals.length === 0) {
-            dealsList.innerHTML = '';
-            emptyState.style.display = 'block';
-            return;
-        }
-        
-        emptyState.style.display = 'none';
-        let html = '';
-        deals.forEach(deal => {
-            const profit = calculateResellProfit(deal.buyPrice, deal.sellPrice, deal.useTax);
-            const profitClass = profit >= 0 ? 'profit-positive' : 'profit-negative';
-            const profitFormatted = formatMoney(profit, true);
-            
-            html += `<tr>
-                <td>${deal.name}</td>
-                <td>${formatMoney(deal.buyPrice)}</td>
-                <td>${formatMoney(deal.sellPrice)}</td>
-                <td>${deal.useTax ? 'Да' : 'Нет'}</td>
-                <td class="${profitClass}">${profitFormatted}</td>
-                <td><button class="delete-btn" onclick="deleteDeal(${deal.id})"><i class="fas fa-times"></i></button></td>
-            </tr>`;
-        });
-        dealsList.innerHTML = html;
-    }
-    
-    function updateStats() {
-        if (!totalSpentEl || !totalRevenueEl || !totalProfitEl || !dealsCountEl) return;
-        
-        let totalSpent = 0, totalRevenue = 0;
-        deals.forEach(deal => {
-            totalSpent += deal.buyPrice;
-            let revenue = deal.sellPrice;
-            if (deal.useTax) revenue = deal.sellPrice * 0.95;
-            totalRevenue += revenue;
-        });
-        
-        const totalProfit = totalRevenue - totalSpent;
-        totalSpentEl.textContent = formatMoney(totalSpent);
-        totalRevenueEl.textContent = formatMoney(totalRevenue);
-        totalProfitEl.textContent = formatMoney(totalProfit, true);
-        dealsCountEl.textContent = deals.length;
-        totalProfitEl.style.color = totalProfit >= 0 ? '#00ff9d' : '#ff4757';
     }
     
     // ===== ОБЩИЕ ФУНКЦИИ =====
@@ -452,168 +293,166 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatMoney(amount, showSign = false) {
         if (isNaN(amount)) return '0 ₽';
         
-        let formatted;
-        if (Math.abs(amount) >= 1000) {
-            formatted = Math.round(amount).toLocaleString('ru-RU');
-        } else {
-            formatted = amount.toFixed(0);
-        }
+        const rounded = Math.round(amount);
+        const withSpaces = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
         
         if (showSign && amount > 0) {
-            return '+' + formatted + ' ₽';
+            return '+' + withSpaces + ' ₽';
         }
         
-        return formatted + ' ₽';
+        return withSpaces + ' ₽';
     }
     
     function showNotification(text) {
         console.log('🔔', text);
+        
         const notification = document.createElement('div');
-        notification.style.cssText = `position:fixed;bottom:20px;right:20px;background:var(--primary);color:var(--dark);padding:12px 24px;border-radius:var(--radius-sm);font-family:var(--font-body);font-weight:600;z-index:1000;animation:slideIn 0.3s ease;`;
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: var(--dark);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-body);
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        `;
         notification.textContent = text;
         document.body.appendChild(notification);
+        
         setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => { if (document.body.contains(notification)) document.body.removeChild(notification); }, 300);
+            notification.remove();
         }, 2000);
     }
     
-    // ===== УБИРАЕМ 0 ПРИ ВВОДЕ =====
-    function setupZeroClearing() {
-        const numberInputs = [
-            document.getElementById('buy-price'),
-            document.getElementById('sell-price'),
-            document.getElementById('price-catalyst'),
-            document.getElementById('price-slast'),
-            document.getElementById('price-dust'),
-            document.getElementById('price-plasma'),
-            document.getElementById('price-energy'),
-            document.getElementById('input-slast'),
-            document.getElementById('input-dust'),
-            document.getElementById('input-plasma'),
-            document.getElementById('input-sugar')
-        ];
-        
-        numberInputs.forEach(input => {
-            if (!input) return;
-            
-            input.addEventListener('focus', function() {
-                if (this.value == 0 || this.value === '0') {
-                    this.value = '';
-                }
-            });
-            
-            input.addEventListener('blur', function() {
-                if (this.value === '') {
-                    this.value = '0';
-                    if (this.id.includes('price') || this.id.includes('input')) {
-                        calculateCatalyst();
-                        saveCalculatorData();
-                    }
-                }
-            });
-        });
-    }
-    
-    // ===== АНИМАЦИИ =====
+    // Анимации
     const style = document.createElement('style');
-    style.textContent = `@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}`;
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
     document.head.appendChild(style);
     
-    // ===== ОБРАБОТЧИКИ =====
-    if (addButton) addButton.addEventListener('click', addDeal);
-    if (clearButton) clearButton.addEventListener('click', clearAllDeals);
+    // ===== ОБРАБОТЧИКИ КАЛЬКУЛЯТОРА =====
     
-    [itemNameInput, buyPriceInput, sellPriceInput].forEach(input => {
-        if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addDeal(); });
+    const calcInputs = [
+        slastInput, dustInput, plasmaInput, sugarInput,
+        priceSlastInput, priceDustInput, pricePlasmaInput,
+        priceCatalystInput, priceEnergyInput, useTaxCheckbox
+    ];
+    
+    calcInputs.forEach(input => {
+        if (!input) return;
+        
+        if (input.type === 'checkbox') {
+            input.addEventListener('change', () => {
+                calculateCatalyst();
+                saveCalculatorData();
+            });
+        } else {
+            input.addEventListener('input', () => {
+                calculateCatalyst();
+                saveCalculatorData();
+            });
+        }
     });
+    
+    // ===== ОБРАБОТЧИКИ ТРЕКЕРА (АВТОВВОД) =====
+    
+    const resellInputs = [buyPriceInput, sellPriceInput, resellTaxCheckbox];
+    
+    resellInputs.forEach(input => {
+        if (!input) return;
+        
+        if (input.type === 'checkbox') {
+            input.addEventListener('change', updateCurrentDeal);
+        } else {
+            input.addEventListener('input', updateCurrentDeal);
+        }
+    });
+    
+    // Обработчик кнопки
+    if (addButton) addButton.addEventListener('click', addDeal);
+    
+    // Enter для добавления
+    [itemNameInput, buyPriceInput, sellPriceInput].forEach(input => {
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addDeal();
+            });
+        }
+    });
+    
+    // ===== ОБРАБОТЧИКИ ДЛЯ РЕСУРСОВ =====
     
     if (sugarInput) {
         sugarInput.addEventListener('input', function() {
-            const sugarAmount = getNumberFromInput(sugarInput);
-            
+            const sugarAmount = getNumber(this.value);
             if (sugarAmount > 0) {
                 const resources = calculateResourcesFromSugar(sugarAmount);
                 if (slastInput) slastInput.value = resources.slast;
                 if (plasmaInput) plasmaInput.value = resources.plasma;
                 if (dustInput) dustInput.value = resources.dust;
             }
-            
             calculateCatalyst();
-            saveCalculatorData();
         });
     }
     
     if (slastInput) {
         slastInput.addEventListener('input', function() {
-            const slast = getNumberFromInput(slastInput);
+            const slast = getNumber(this.value);
             if (plasmaInput) plasmaInput.value = Math.floor(slast / 10);
             if (dustInput) dustInput.value = Math.floor(slast * 30);
             
-            const dust = getNumberFromInput(dustInput);
-            const plasma = getNumberFromInput(plasmaInput);
+            const dust = getNumber(dustInput?.value);
+            const plasma = getNumber(plasmaInput?.value);
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
             if (sugarInput) sugarInput.value = sugarData.sugar;
             
             calculateCatalyst();
-            saveCalculatorData();
         });
     }
     
     if (dustInput) {
         dustInput.addEventListener('input', function() {
-            const dust = getNumberFromInput(dustInput);
+            const dust = getNumber(this.value);
             if (slastInput) slastInput.value = Math.floor(dust / 30);
             if (plasmaInput) plasmaInput.value = Math.floor(dust / 300);
             
-            const slast = getNumberFromInput(slastInput);
-            const plasma = getNumberFromInput(plasmaInput);
+            const slast = getNumber(slastInput?.value);
+            const plasma = getNumber(plasmaInput?.value);
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
             if (sugarInput) sugarInput.value = sugarData.sugar;
             
             calculateCatalyst();
-            saveCalculatorData();
         });
     }
     
     if (plasmaInput) {
         plasmaInput.addEventListener('input', function() {
-            const plasma = getNumberFromInput(plasmaInput);
+            const plasma = getNumber(this.value);
             if (slastInput) slastInput.value = plasma * 10;
             if (dustInput) dustInput.value = plasma * 300;
             
-            const slast = getNumberFromInput(slastInput);
-            const dust = getNumberFromInput(dustInput);
+            const slast = getNumber(slastInput?.value);
+            const dust = getNumber(dustInput?.value);
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
             if (sugarInput) sugarInput.value = sugarData.sugar;
             
             calculateCatalyst();
-            saveCalculatorData();
         });
     }
     
-    [priceSlastInput, priceDustInput, pricePlasmaInput, priceCatalystInput, useTaxCheckbox].forEach(input => {
-        if (input) {
-            input.addEventListener('input', () => {
-                calculateCatalyst();
-                saveCalculatorData();
-            });
-            if (input.type === 'checkbox') {
-                input.addEventListener('change', () => {
-                    calculateCatalyst();
-                    saveCalculatorData();
-                });
-            }
-        }
-    });
-    
     // ===== ИНИЦИАЛИЗАЦИЯ =====
-    setupCalculatorLimits();
     loadCalculatorData();
-    loadDeals();
-    setupZeroClearing();
-    setupResellAutoUpdate(); // АВТОСЧЕТ ДЛЯ ТРЕКЕРА
+    calculateCatalyst();
+    updateCurrentDeal();
 });
