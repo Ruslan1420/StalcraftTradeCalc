@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     const savedMode = localStorage.getItem('stalcraft_mode') || 'catalyst';
-    document.querySelector(`[data-mode="${savedMode}"]`).click();
+    const savedBtn = document.querySelector(`[data-mode="${savedMode}"]`);
+    if (savedBtn) savedBtn.click();
     
     // ===== КАЛЬКУЛЯТОР КАТАЛИЗАТОРОВ =====
     
@@ -37,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
         ENERGY_PER_CRAFT: 1200
     };
     
-    // Получение элементов
     const slastInput = document.getElementById('input-slast');
     const dustInput = document.getElementById('input-dust');
     const plasmaInput = document.getElementById('input-plasma');
@@ -56,113 +56,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultRevenue = document.getElementById('result-revenue');
     const resultProfit = document.getElementById('result-profit');
     
-    // ===== ЭЛЕМЕНТЫ ТРЕКЕРА =====
-    const itemNameInput = document.getElementById('item-name');
-    const buyPriceInput = document.getElementById('buy-price');
-    const sellPriceInput = document.getElementById('sell-price');
-    const resellTaxCheckbox = document.getElementById('resell-tax');
-    const addButton = document.getElementById('add-deal');
-    const clearButton = document.getElementById('clear-history');
+    // ===== ФУНКЦИИ КАЛЬКУЛЯТОРА =====
     
-    const totalSpentEl = document.getElementById('total-spent');
-    const totalRevenueEl = document.getElementById('total-revenue');
-    const totalProfitEl = document.getElementById('total-profit');
-    const dealsCountEl = document.getElementById('deals-count');
-    
-    const dealsList = document.getElementById('deals-list');
-    const emptyState = document.getElementById('empty-state');
-    
-    // ===== ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ЧИСТОГО ЧИСЛА =====
-    function getRawNumber(input) {
-        if (!input) return 0;
-        let value = input.value.replace(/\s/g, ''); // убираем пробелы
-        if (value === '') return 0;
-        return parseInt(value) || 0;
-    }
-    
-    // ===== ФУНКЦИЯ ДЛЯ ФОРМАТИРОВАНИЯ С ПРОБЕЛАМИ =====
-    function formatWithSpaces(value) {
-        if (!value) return '';
-        // Убираем все не-цифры
-        let raw = value.toString().replace(/\D/g, '');
-        if (raw === '') return '';
-        
-        // Добавляем пробелы
-        let result = '';
-        for (let i = 0; i < raw.length; i++) {
-            if (i > 0 && (raw.length - i) % 3 === 0) {
-                result += ' ';
-            }
-            result += raw[i];
-        }
-        return result;
-    }
-    
-    // ===== НАСТРОЙКА ВВОДА С ПРОБЕЛАМИ =====
-    function setupInputFormatting() {
-        const numberInputs = [
+    function setupCalculatorLimits() {
+        const inputs = [
             slastInput, dustInput, plasmaInput, sugarInput,
             priceSlastInput, priceDustInput, pricePlasmaInput,
-            priceCatalystInput, buyPriceInput, sellPriceInput
+            priceCatalystInput
         ];
         
-        numberInputs.forEach(input => {
+        inputs.forEach(input => {
             if (!input) return;
             
-            // При вводе
-            input.addEventListener('input', function(e) {
-                // Сохраняем позицию курсора
-                const cursorPos = this.selectionStart;
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/[^\d]/g, '');
                 
-                // Получаем только цифры
-                let raw = this.value.replace(/\D/g, '');
-                
-                // Ограничиваем длину
-                if (raw.length > 8) {
-                    raw = raw.slice(0, 8);
+                if (this.value.length > 8) {
+                    this.value = this.value.substring(0, 8);
                 }
                 
-                // Форматируем
-                let formatted = '';
-                for (let i = 0; i < raw.length; i++) {
-                    if (i > 0 && (raw.length - i) % 3 === 0) {
-                        formatted += ' ';
-                    }
-                    formatted += raw[i];
-                }
-                
-                // Устанавливаем значение
-                this.value = formatted;
-                
-                // Восстанавливаем позицию курсора
-                const newPos = cursorPos + (formatted.length - raw.length);
-                this.setSelectionRange(newPos, newPos);
-                
-                // Запускаем расчеты
-                if (this === slastInput || this === dustInput || this === plasmaInput || 
-                    this === sugarInput || this === priceSlastInput || this === priceDustInput || 
-                    this === pricePlasmaInput || this === priceEnergyInput || this === priceCatalystInput) {
-                    calculateCatalyst();
-                    saveCalculatorData();
-                }
-            });
-            
-            // При потере фокуса
-            input.addEventListener('blur', function() {
-                if (this.value === '') {
-                    this.value = '0';
-                }
-            });
-            
-            // При фокусе - если 0, очищаем
-            input.addEventListener('focus', function() {
-                if (this.value === '0' || this.value === '0 ') {
-                    this.value = '';
-                }
+                calculateCatalyst();
+                saveCalculatorData();
             });
         });
         
-        // Отдельно для энергии
         if (priceEnergyInput) {
             priceEnergyInput.addEventListener('input', function() {
                 let value = this.value.replace(',', '.');
@@ -185,10 +102,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // ===== ФУНКЦИИ КАЛЬКУЛЯТОРА =====
-    
     function calculateResourcesFromSugar(sugarAmount) {
-        const sugar = sugarAmount || 0;
+        const sugar = parseFloat(sugarAmount) || 0;
         const catalystCrafts = Math.floor(sugar / CRAFT.CATALYST.SUGAR);
         const neededSugar = catalystCrafts * CRAFT.CATALYST.SUGAR;
         const neededDustForCatalyst = catalystCrafts * CRAFT.CATALYST.DUST;
@@ -224,17 +139,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function calculateCatalyst() {
-        // Получаем значения без пробелов
-        const slast = getRawNumber(slastInput);
-        const dust = getRawNumber(dustInput);
-        const plasma = getRawNumber(plasmaInput);
-        const sugar = getRawNumber(sugarInput);
+        const slast = parseFloat(slastInput?.value) || 0;
+        const dust = parseFloat(dustInput?.value) || 0;
+        const plasma = parseFloat(plasmaInput?.value) || 0;
+        const sugar = parseFloat(sugarInput?.value) || 0;
         
-        const priceSlast = getRawNumber(priceSlastInput) || 7800;
-        const priceDust = getRawNumber(priceDustInput) || 275;
-        const pricePlasma = getRawNumber(pricePlasmaInput) || 1500;
+        const priceSlast = parseFloat(priceSlastInput?.value) || 7800;
+        const priceDust = parseFloat(priceDustInput?.value) || 275;
+        const pricePlasma = parseFloat(pricePlasmaInput?.value) || 1500;
         const priceEnergy = parseFloat(priceEnergyInput?.value.replace(',', '.')) || 1.2;
-        const priceCatalyst = getRawNumber(priceCatalystInput) || 4135;
+        const priceCatalyst = parseFloat(priceCatalystInput?.value) || 4135;
         const useTax = useTaxCheckbox?.checked || false;
         
         const costOneSugarCraft = (CRAFT.SUGAR.SLATS * priceSlast + CRAFT.SUGAR.PLASMA * pricePlasma + CRAFT.SUGAR.DUST * priceDust + CRAFT.ENERGY_PER_CRAFT * priceEnergy) / CRAFT.SUGAR.OUTPUT;
@@ -287,18 +201,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (useTax) revenue = revenue * 0.95;
         const profit = revenue - totalCost;
         
-        updateCatalystResults(catalystsProduced, totalCost, revenue, profit);
-        saveCalculatorData();
-    }
-    
-    function updateCatalystResults(catalysts, cost, revenue, profit) {
-        if (resultOutput) resultOutput.textContent = catalysts.toLocaleString('ru-RU');
+        if (resultOutput) resultOutput.textContent = catalystsProduced.toLocaleString('ru-RU');
         if (resultCost) resultCost.textContent = formatMoney(cost);
         if (resultRevenue) resultRevenue.textContent = formatMoney(revenue);
         if (resultProfit) {
             resultProfit.textContent = formatMoney(profit);
             resultProfit.style.color = profit >= 0 ? '#00ff9d' : '#ff4757';
         }
+        saveCalculatorData();
     }
     
     function saveCalculatorData() {
@@ -327,7 +237,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const saved = localStorage.getItem('stalcraft_calculator');
             if (saved) {
                 const data = JSON.parse(saved);
-                
                 if (data.slast !== undefined && slastInput) slastInput.value = data.slast;
                 if (data.dust !== undefined && dustInput) dustInput.value = data.dust;
                 if (data.plasma !== undefined && plasmaInput) plasmaInput.value = data.plasma;
@@ -338,7 +247,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.priceEnergy !== undefined && priceEnergyInput) priceEnergyInput.value = data.priceEnergy;
                 if (data.priceCatalyst !== undefined && priceCatalystInput) priceCatalystInput.value = data.priceCatalyst;
                 if (data.useTax !== undefined && useTaxCheckbox) useTaxCheckbox.checked = data.useTax;
-                
                 setTimeout(() => calculateCatalyst(), 100);
             }
         } catch (error) {
@@ -348,14 +256,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== ТРЕКЕР ПЕРЕПРОДАЖ =====
     
+    const itemNameInput = document.getElementById('item-name');
+    const buyPriceInput = document.getElementById('buy-price');
+    const sellPriceInput = document.getElementById('sell-price');
+    const resellTaxCheckbox = document.getElementById('resell-tax');
+    const addButton = document.getElementById('add-deal');
+    const clearButton = document.getElementById('clear-history');
+    
+    const totalSpentEl = document.getElementById('total-spent');
+    const totalRevenueEl = document.getElementById('total-revenue');
+    const totalProfitEl = document.getElementById('total-profit');
+    const dealsCountEl = document.getElementById('deals-count');
+    
+    const dealsList = document.getElementById('deals-list');
+    const emptyState = document.getElementById('empty-state');
+    
     let deals = [];
     
     function loadDeals() {
         try {
             const saved = localStorage.getItem('stalcraft_resells');
-            if (saved) {
-                deals = JSON.parse(saved);
-            }
+            if (saved) deals = JSON.parse(saved);
         } catch (error) {
             console.error('Ошибка загрузки сделок:', error);
             deals = [];
@@ -389,8 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function addDeal() {
         const name = itemNameInput?.value.trim();
-        const buyPrice = getRawNumber(buyPriceInput);
-        const sellPrice = getRawNumber(sellPriceInput);
+        const buyPrice = parseInt(buyPriceInput?.value) || 0;
+        const sellPrice = parseInt(sellPriceInput?.value) || 0;
         const useTax = resellTaxCheckbox?.checked || false;
         
         if (!name) { alert('Введите название предмета!'); return; }
@@ -488,14 +409,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatMoney(amount, showSign = false) {
         if (isNaN(amount)) return '0 ₽';
         
-        const rounded = Math.round(amount);
-        const withSpaces = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-        
-        if (showSign && amount > 0) {
-            return '+' + withSpaces + ' ₽';
+        let formatted;
+        if (Math.abs(amount) >= 1000) {
+            formatted = Math.round(amount).toLocaleString('ru-RU');
+        } else {
+            formatted = amount.toFixed(0);
         }
         
-        return withSpaces + ' ₽';
+        if (showSign && amount > 0) {
+            return '+' + formatted + ' ₽';
+        }
+        
+        return formatted + ' ₽';
     }
     
     function showNotification(text) {
@@ -510,12 +435,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
     }
     
-    // ===== АНИМАЦИИ =====
+    // ===== УБИРАЕМ 0 ПРИ ВВОДЕ (НОВЫЙ КОД) =====
+    function setupZeroClearing() {
+        // Все числовые поля, которые должны очищаться
+        const numberInputs = [
+            document.getElementById('buy-price'),
+            document.getElementById('sell-price'),
+            document.getElementById('price-catalyst'),
+            document.getElementById('price-slast'),
+            document.getElementById('price-dust'),
+            document.getElementById('price-plasma'),
+            document.getElementById('price-energy'),
+            document.getElementById('input-slast'),
+            document.getElementById('input-dust'),
+            document.getElementById('input-plasma'),
+            document.getElementById('input-sugar')
+        ];
+        
+        numberInputs.forEach(input => {
+            if (!input) return;
+            
+            // При фокусе - если значение 0, очищаем поле
+            input.addEventListener('focus', function() {
+                if (this.value == 0 || this.value === '0') {
+                    this.value = '';
+                }
+            });
+            
+            // При потере фокуса - если поле пустое, ставим 0
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.value = '0';
+                    // Запускаем расчет для этого поля
+                    if (this.id.includes('price') || this.id.includes('input')) {
+                        calculateCatalyst();
+                        saveCalculatorData();
+                    }
+                }
+            });
+        });
+    }
+    
     const style = document.createElement('style');
     style.textContent = `@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}`;
     document.head.appendChild(style);
     
-    // ===== ОБРАБОТЧИКИ ТРЕКЕРА =====
     if (addButton) addButton.addEventListener('click', addDeal);
     if (clearButton) clearButton.addEventListener('click', clearAllDeals);
     
@@ -523,16 +487,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addDeal(); });
     });
     
-    // ===== ОБРАБОТЧИКИ КАЛЬКУЛЯТОРА =====
     if (sugarInput) {
         sugarInput.addEventListener('input', function() {
-            const sugarAmount = getRawNumber(sugarInput);
+            const sugarAmount = parseFloat(this.value) || 0;
             
             if (sugarAmount > 0) {
                 const resources = calculateResourcesFromSugar(sugarAmount);
-                if (slastInput) slastInput.value = formatWithSpaces(resources.slast.toString());
-                if (plasmaInput) plasmaInput.value = formatWithSpaces(resources.plasma.toString());
-                if (dustInput) dustInput.value = formatWithSpaces(resources.dust.toString());
+                if (slastInput) slastInput.value = resources.slast;
+                if (plasmaInput) plasmaInput.value = resources.plasma;
+                if (dustInput) dustInput.value = resources.dust;
             }
             
             calculateCatalyst();
@@ -542,15 +505,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (slastInput) {
         slastInput.addEventListener('input', function() {
-            const slast = getRawNumber(slastInput);
-            if (plasmaInput) plasmaInput.value = formatWithSpaces(Math.floor(slast / 10).toString());
-            if (dustInput) dustInput.value = formatWithSpaces(Math.floor(slast * 30).toString());
+            const slast = parseFloat(this.value) || 0;
+            if (plasmaInput) plasmaInput.value = Math.floor(slast / 10);
+            if (dustInput) dustInput.value = Math.floor(slast * 30);
             
-            const dust = getRawNumber(dustInput);
-            const plasma = getRawNumber(plasmaInput);
+            const dust = parseFloat(dustInput?.value) || 0;
+            const plasma = parseFloat(plasmaInput?.value) || 0;
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
-            if (sugarInput) sugarInput.value = formatWithSpaces(sugarData.sugar.toString());
+            if (sugarInput) sugarInput.value = sugarData.sugar;
             
             calculateCatalyst();
             saveCalculatorData();
@@ -559,15 +522,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (dustInput) {
         dustInput.addEventListener('input', function() {
-            const dust = getRawNumber(dustInput);
-            if (slastInput) slastInput.value = formatWithSpaces(Math.floor(dust / 30).toString());
-            if (plasmaInput) plasmaInput.value = formatWithSpaces(Math.floor(dust / 300).toString());
+            const dust = parseFloat(this.value) || 0;
+            if (slastInput) slastInput.value = Math.floor(dust / 30);
+            if (plasmaInput) plasmaInput.value = Math.floor(dust / 300);
             
-            const slast = getRawNumber(slastInput);
-            const plasma = getRawNumber(plasmaInput);
+            const slast = parseFloat(slastInput?.value) || 0;
+            const plasma = parseFloat(plasmaInput?.value) || 0;
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
-            if (sugarInput) sugarInput.value = formatWithSpaces(sugarData.sugar.toString());
+            if (sugarInput) sugarInput.value = sugarData.sugar;
             
             calculateCatalyst();
             saveCalculatorData();
@@ -576,22 +539,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (plasmaInput) {
         plasmaInput.addEventListener('input', function() {
-            const plasma = getRawNumber(plasmaInput);
-            if (slastInput) slastInput.value = formatWithSpaces((plasma * 10).toString());
-            if (dustInput) dustInput.value = formatWithSpaces((plasma * 300).toString());
+            const plasma = parseFloat(this.value) || 0;
+            if (slastInput) slastInput.value = plasma * 10;
+            if (dustInput) dustInput.value = plasma * 300;
             
-            const slast = getRawNumber(slastInput);
-            const dust = getRawNumber(dustInput);
+            const slast = parseFloat(slastInput?.value) || 0;
+            const dust = parseFloat(dustInput?.value) || 0;
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
-            if (sugarInput) sugarInput.value = formatWithSpaces(sugarData.sugar.toString());
+            if (sugarInput) sugarInput.value = sugarData.sugar;
             
             calculateCatalyst();
             saveCalculatorData();
         });
     }
     
-    // Обработчики цен
     [priceSlastInput, priceDustInput, pricePlasmaInput, priceCatalystInput, useTaxCheckbox].forEach(input => {
         if (input) {
             input.addEventListener('input', () => {
@@ -607,8 +569,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
-    setupInputFormatting();
+    setupCalculatorLimits();
     loadCalculatorData();
     loadDeals();
+    setupZeroClearing(); // Добавляем новую функцию
 });
