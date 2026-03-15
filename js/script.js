@@ -495,22 +495,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ===== ОБЩИЕ ФУНКЦИИ =====
-    
     function formatMoney(amount, showSign = false) {
         if (isNaN(amount)) return '0 ₽';
-        
-        let formatted;
-        if (Math.abs(amount) >= 1000) {
-            formatted = Math.round(amount).toLocaleString('ru-RU');
-        } else {
-            formatted = amount.toFixed(0);
-        }
-        
+    
+        // Округляем до целого числа
+        const rounded = Math.round(amount);
+    
+        // Добавляем пробелы как разделители тысяч
+        const withSpaces = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    
         if (showSign && amount > 0) {
-            return '+' + formatted + ' ₽';
+            return '+' + withSpaces + ' ₽';
         }
         
-        return formatted + ' ₽';
+        return withSpaces + ' ₽';
     }
     
     function showNotification(text) {
