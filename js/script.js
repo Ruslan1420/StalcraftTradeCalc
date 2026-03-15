@@ -558,10 +558,52 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateCatalyst();
         });
     }
+    function setupZeroClearing() {
+        const numberInputs = [
+            document.getElementById('buy-price'),
+            document.getElementById('sell-price'),
+            document.getElementById('price-catalyst'),
+            document.getElementById('price-slast'),
+            document.getElementById('price-dust'),
+            document.getElementById('price-plasma'),
+            document.getElementById('price-energy'),
+            document.getElementById('input-slast'),
+            document.getElementById('input-dust'),
+            document.getElementById('input-plasma'),
+            document.getElementById('input-sugar')
+        ];
+        
+        numberInputs.forEach(input => {
+            if (!input) return;
+            
+            // При фокусе - если значение 0, очищаем поле
+            input.addEventListener('focus', function() {
+                if (this.value == 0 || this.value === '0' || this.value === '0 ₽') {
+                    this.value = '';
+                }
+            });
+            
+            // При потере фокуса - если поле пустое, ставим 0
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.value = '0';
+                    // Запускаем расчет для этого поля
+                    if (this.id.includes('price') || this.id.includes('input')) {
+                        calculateCatalyst();
+                        saveCalculatorData();
+                    }
+                    if (this.id === 'buy-price' || this.id === 'sell-price') {
+                        updateStats();
+                    }
+                }
+            });
+        });
+    }
     
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     loadCalculatorData();
     loadDeals();
     calculateCatalyst();
     updateStats();
+    setupZeroClearing();
 });
