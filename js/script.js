@@ -30,15 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const savedBtn = document.querySelector(`[data-mode="${savedMode}"]`);
     if (savedBtn) savedBtn.click();
     
-    // ===== ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ЧИСЛА (УБИРАЕТ ПРОБЕЛЫ) =====
-    function getNumberFromInput(input) {
-        if (!input) return 0;
-        // Убираем все пробелы из строки
-        let value = input.value.replace(/\s/g, '');
-        if (value === '') return 0;
-        return parseInt(value) || 0;
-    }
-    
     // ===== КАЛЬКУЛЯТОР КАТАЛИЗАТОРОВ =====
     
     const CRAFT = {
@@ -78,23 +69,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!input) return;
             
             input.addEventListener('input', function() {
-                // НЕ УДАЛЯЕМ пробелы, только лишние
-                this.value = this.value.replace(/\s+/g, ' ').trim();
+                this.value = this.value.replace(/[^\d]/g, '');
                 
-                // Ограничиваем длину (но считаем без пробелов)
-                let rawValue = this.value.replace(/\s/g, '');
-                if (rawValue.length > 8) {
-                    // Если слишком много цифр - обрезаем
-                    rawValue = rawValue.substring(0, 8);
-                    // Форматируем обратно с пробелами
-                    let formatted = '';
-                    for (let i = 0; i < rawValue.length; i++) {
-                        if (i > 0 && i % 3 === 0) {
-                            formatted += ' ';
-                        }
-                        formatted += rawValue[i];
-                    }
-                    this.value = formatted;
+                if (this.value.length > 8) {
+                    this.value = this.value.substring(0, 8);
                 }
                 
                 calculateCatalyst();
@@ -125,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function calculateResourcesFromSugar(sugarAmount) {
-        const sugar = sugarAmount || 0;
+        const sugar = parseFloat(sugarAmount) || 0;
         const catalystCrafts = Math.floor(sugar / CRAFT.CATALYST.SUGAR);
         const neededSugar = catalystCrafts * CRAFT.CATALYST.SUGAR;
         const neededDustForCatalyst = catalystCrafts * CRAFT.CATALYST.DUST;
@@ -161,17 +139,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function calculateCatalyst() {
-        // ИСПОЛЬЗУЕМ НОВУЮ ФУНКЦИЮ для получения чисел
-        const slast = getNumberFromInput(slastInput);
-        const dust = getNumberFromInput(dustInput);
-        const plasma = getNumberFromInput(plasmaInput);
-        const sugar = getNumberFromInput(sugarInput);
+        const slast = parseFloat(slastInput?.value) || 0;
+        const dust = parseFloat(dustInput?.value) || 0;
+        const plasma = parseFloat(plasmaInput?.value) || 0;
+        const sugar = parseFloat(sugarInput?.value) || 0;
         
-        const priceSlast = getNumberFromInput(priceSlastInput) || 7800;
-        const priceDust = getNumberFromInput(priceDustInput) || 275;
-        const pricePlasma = getNumberFromInput(pricePlasmaInput) || 1500;
+        const priceSlast = parseFloat(priceSlastInput?.value) || 7800;
+        const priceDust = parseFloat(priceDustInput?.value) || 275;
+        const pricePlasma = parseFloat(pricePlasmaInput?.value) || 1500;
         const priceEnergy = parseFloat(priceEnergyInput?.value.replace(',', '.')) || 1.2;
-        const priceCatalyst = getNumberFromInput(priceCatalystInput) || 4135;
+        const priceCatalyst = parseFloat(priceCatalystInput?.value) || 4135;
         const useTax = useTaxCheckbox?.checked || false;
         
         const costOneSugarCraft = (CRAFT.SUGAR.SLATS * priceSlast + CRAFT.SUGAR.PLASMA * pricePlasma + CRAFT.SUGAR.DUST * priceDust + CRAFT.ENERGY_PER_CRAFT * priceEnergy) / CRAFT.SUGAR.OUTPUT;
@@ -333,9 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function addDeal() {
         const name = itemNameInput?.value.trim();
-        // ИСПОЛЬЗУЕМ НОВУЮ ФУНКЦИЮ для получения чисел
-        const buyPrice = getNumberFromInput(buyPriceInput);
-        const sellPrice = getNumberFromInput(sellPriceInput);
+        const buyPrice = parseInt(buyPriceInput?.value) || 0;
+        const sellPrice = parseInt(sellPriceInput?.value) || 0;
         const useTax = resellTaxCheckbox?.checked || false;
         
         if (!name) { alert('Введите название предмета!'); return; }
@@ -459,8 +435,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
     }
     
-    // ===== УБИРАЕМ 0 ПРИ ВВОДЕ =====
+    // ===== УБИРАЕМ 0 ПРИ ВВОДЕ (НОВЫЙ КОД) =====
     function setupZeroClearing() {
+        // Все числовые поля, которые должны очищаться
         const numberInputs = [
             document.getElementById('buy-price'),
             document.getElementById('sell-price'),
@@ -478,15 +455,18 @@ document.addEventListener('DOMContentLoaded', function() {
         numberInputs.forEach(input => {
             if (!input) return;
             
+            // При фокусе - если значение 0, очищаем поле
             input.addEventListener('focus', function() {
                 if (this.value == 0 || this.value === '0') {
                     this.value = '';
                 }
             });
             
+            // При потере фокуса - если поле пустое, ставим 0
             input.addEventListener('blur', function() {
                 if (this.value === '') {
                     this.value = '0';
+                    // Запускаем расчет для этого поля
                     if (this.id.includes('price') || this.id.includes('input')) {
                         calculateCatalyst();
                         saveCalculatorData();
@@ -496,12 +476,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // ===== АНИМАЦИИ =====
     const style = document.createElement('style');
     style.textContent = `@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}`;
     document.head.appendChild(style);
     
-    // ===== ОБРАБОТЧИКИ =====
     if (addButton) addButton.addEventListener('click', addDeal);
     if (clearButton) clearButton.addEventListener('click', clearAllDeals);
     
@@ -511,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (sugarInput) {
         sugarInput.addEventListener('input', function() {
-            const sugarAmount = getNumberFromInput(sugarInput);
+            const sugarAmount = parseFloat(this.value) || 0;
             
             if (sugarAmount > 0) {
                 const resources = calculateResourcesFromSugar(sugarAmount);
@@ -527,12 +505,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (slastInput) {
         slastInput.addEventListener('input', function() {
-            const slast = getNumberFromInput(slastInput);
+            const slast = parseFloat(this.value) || 0;
             if (plasmaInput) plasmaInput.value = Math.floor(slast / 10);
             if (dustInput) dustInput.value = Math.floor(slast * 30);
             
-            const dust = getNumberFromInput(dustInput);
-            const plasma = getNumberFromInput(plasmaInput);
+            const dust = parseFloat(dustInput?.value) || 0;
+            const plasma = parseFloat(plasmaInput?.value) || 0;
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
             if (sugarInput) sugarInput.value = sugarData.sugar;
@@ -544,12 +522,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (dustInput) {
         dustInput.addEventListener('input', function() {
-            const dust = getNumberFromInput(dustInput);
+            const dust = parseFloat(this.value) || 0;
             if (slastInput) slastInput.value = Math.floor(dust / 30);
             if (plasmaInput) plasmaInput.value = Math.floor(dust / 300);
             
-            const slast = getNumberFromInput(slastInput);
-            const plasma = getNumberFromInput(plasmaInput);
+            const slast = parseFloat(slastInput?.value) || 0;
+            const plasma = parseFloat(plasmaInput?.value) || 0;
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
             if (sugarInput) sugarInput.value = sugarData.sugar;
@@ -561,12 +539,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (plasmaInput) {
         plasmaInput.addEventListener('input', function() {
-            const plasma = getNumberFromInput(plasmaInput);
+            const plasma = parseFloat(this.value) || 0;
             if (slastInput) slastInput.value = plasma * 10;
             if (dustInput) dustInput.value = plasma * 300;
             
-            const slast = getNumberFromInput(slastInput);
-            const dust = getNumberFromInput(dustInput);
+            const slast = parseFloat(slastInput?.value) || 0;
+            const dust = parseFloat(dustInput?.value) || 0;
             
             const sugarData = calculateSugarFromResources(slast, dust, plasma);
             if (sugarInput) sugarInput.value = sugarData.sugar;
@@ -591,9 +569,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
     setupCalculatorLimits();
     loadCalculatorData();
     loadDeals();
-    setupZeroClearing();
+    setupZeroClearing(); // Добавляем новую функцию
 });
