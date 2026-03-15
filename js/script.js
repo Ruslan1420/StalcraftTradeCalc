@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const profit = revenue - totalCost;
         
         if (resultOutput) resultOutput.textContent = catalystsProduced.toLocaleString('ru-RU');
-        if (resultCost) resultCost.textContent = formatMoney(cost);
+        if (resultCost) resultCost.textContent = formatMoney(totalCost);
         if (resultRevenue) resultRevenue.textContent = formatMoney(revenue);
         if (resultProfit) {
             resultProfit.textContent = formatMoney(profit);
