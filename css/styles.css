@@ -866,7 +866,6 @@ input:invalid {
         font-size: 14px !important;
     }
 }
-
 /* Итоговая строка */
 .totals-container {
     margin-top: 15px;
@@ -902,18 +901,4 @@ input:invalid {
 #total-profit-footer {
     font-size: 18px;
     font-weight: 700;
-}
-
-/* Мобильная версия */
-@media (max-width: 600px) {
-    .totals-row td {
-        padding: 10px 8px;
-        font-size: 14px;
-    }
-    
-    #total-spent-footer,
-    #total-revenue-footer,
-    #total-profit-footer {
-        font-size: 15px;
-    }
 }
