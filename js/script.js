@@ -626,4 +626,12 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     updateDealInfo();
     setupZeroClearing();
+
+    // ===== ОБНОВЛЕНИЕ ИТОГОВ ПРИ ЗАГРУЗКЕ =====
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        if (deals && deals.length > 0) {
+            updateStats();
+        }
+    }, 100);
 });
