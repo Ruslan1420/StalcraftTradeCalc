@@ -387,12 +387,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const totalProfit = totalRevenue - totalSpent;
         
+        // Обновляем верхнюю статистику
         totalSpentEl.textContent = formatMoney(totalSpent);
         totalRevenueEl.textContent = formatMoney(totalRevenue);
         totalProfitEl.textContent = formatMoney(totalProfit, true);
         dealsCountEl.textContent = deals.length;
-        
         totalProfitEl.style.color = totalProfit >= 0 ? '#00ff9d' : '#ff4757';
+        
+        // Обновляем итоговую строку внизу таблицы
+        const totalSpentFooter = document.getElementById('total-spent-footer');
+        const totalRevenueFooter = document.getElementById('total-revenue-footer');
+        const totalProfitFooter = document.getElementById('total-profit-footer');
+        
+        if (totalSpentFooter) totalSpentFooter.textContent = formatMoney(totalSpent);
+        if (totalRevenueFooter) totalRevenueFooter.textContent = formatMoney(totalRevenue);
+        if (totalProfitFooter) {
+            totalProfitFooter.textContent = formatMoney(totalProfit, true);
+            totalProfitFooter.className = totalProfit >= 0 ? 'profit-positive' : 'profit-negative';
+        }
     }
     
     // ===== ФУНКЦИИ ДЛЯ ОКОШЕК ТЕКУЩЕЙ СДЕЛКИ =====
