@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         renderDeals();
-        updateStats();
+        updateStats(); // ← ЭТОТ ВЫЗОВ УЖЕ ДОЛЖЕН БЫТЬ, ПРОВЕРЬТЕ
     }
     
     function saveDeals() {
